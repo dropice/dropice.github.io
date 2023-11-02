@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>ECharts 滚轮缩放示例</title>
+  <!-- 引入 ECharts 主文件 -->
+  <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+  <style>
+    /* 设置图表容器的尺寸 */
+    #chart {
+      width: 600px;
+      height: 400px;
+    }
+  </style>
+</head>
+<body>
+  <!-- 图表容器 -->
+  <div id="chart"></div>
+
+  <script>
+    // 初始化图表
+    var myChart = echarts.init(document.getElementById('chart'));
+
+    // 鼠标滚轮事件处理函数
+    function mouseWheelHandler(event) {
+      event.preventDefault(); // 阻止默认滚轮事件
+
+      var deltaY = event.deltaY;
+      var zoom = 0.1; // 缩放比例
+        
+      // 获取所有的 y 轴实例
+      var yAxisInstances = myChart.getOption().yAxis;
+      const offsetLeft = myChart.getOption().grid[0].left
+    // console.log('-----------------',myChart.getOption())
+      // 遍历每个 y 轴实例，进行缩放
+      yAxisInstances.forEach(function (yAxis,index) {
+        console.log({yAxis})
+        // console.log('yAxis.width',yAxis.width)
+        const axisComponent = myChart.getModel().getComponent('yAxis', index)
+        const axis = axisComponent.axis
+        if(axis.dim != 'y') return;
+        // console.log(myChart.getModel().getComponent('yAxis', index))
+        // console.log({axis})
+        var axisExtent = axis.scale.getExtent();
+        // console.log({axisExtent})
+        // console.log(axis.pointToData)
+        // console.log({event})
+        var yStart = offsetLeft - axisComponent.option.offset;
+        var yEnd = yStart + axisComponent.option.axisLine.lineStyle.width;
+
+  // 判断鼠标是否在 Y 轴上
+//   console.log(yStart,event.zrX)
+  if (event.zrX >= yStart -30 && event.zrX <= yEnd) {
+    // console.log(deltaY,axisExtent)
+    // console.log('鼠标在 Y 轴上');
+  } else {
+    // console.log('鼠标不在 Y 轴上');
+    return
+  }
+
+        var newMin = axisExtent[0] + zoom * deltaY;
+        if(deltaY < 0) {
+            var newMax = Math.ceil(axisExtent[1] - zoom * - axisExtent[1])
+        } else {
+            var newMax = Math.floor(axisExtent[1] - zoom *  axisExtent[1])
+        }
+        
+        newMin = 0
+        newMax = newMax < 0 ? 0 : newMax
+        yAxis.min = newMin;
+        yAxis.max = newMax
+        myChart.setOption({
+          yAxis: yAxisInstances
+        });
+      });
+    }
+
+    // 注册鼠标滚轮事件
+    document.getElementById('chart').addEventListener('wheel', mouseWheelHandler);
+
+    // 图表配置
+    var option = {
+      xAxis: {
+        type: 'category',
+        data: ['A', 'B', 'C', 'D', 'E', 'F', 'G']
+      },
+      grid: {
+    left: '100'
+  },
+      yAxis: [
+        {
+          type: 'value',
+          max: 'dataMax',
+          name: 'Y1',
+          position: 'left',
+      offset: '0',
+      axisLine: {
+        show: true,
+      },
+        },
+        {
+          type: 'value',
+          max: 'dataMax',
+          name: 'Y2',
+          position: 'left',
+      offset: '35',
+      axisLine: {
+        show: true,
+      },
+        },
+        {
+          type: 'value',
+          max: 'dataMax',
+          name: 'Y3',
+          position: 'left',
+      offset: '70',
+      axisLine: {
+        show: true,
+      },
+        }
+      ],
+      series: [
+        {
+          name: 'Series 1',
+          type: 'line',
+          data: [100, 200, 150, 80, 70, 110, 130],
+          yAxisIndex: 0 // 使用第一个 y 轴
+        },
+        {
+          name: 'Series 2',
+          type: 'line',
+          data: [50, 120, 90, 150, 30, 70, 60],
+          yAxisIndex: 1 // 使用第二个 y 轴
+        },
+        {
+          name: 'Series 3',
+          type: 'line',
+          data: [200, 180, 160, 70, 90, 80, 120],
+          yAxisIndex: 2 // 使用第三个 y 轴
+        }
+      ]
+    };
+
+    // 使用刚指定的配置项和数据显示图表
+    myChart.setOption(option);
+  </script>
+</body>
+</html>
